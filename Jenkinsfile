@@ -21,7 +21,7 @@ pipeline {
                     }
                     if (imageExistsOutput) {
                         echo 'Image exists. Removing...'
-                        sh """docker rmi -f \$(docker images 'blog_backend' -a -q)"""
+                        sh """docker rmi -f \$(docker images 'blog_api' -a -q)"""
                     }
                     else {
                         echo 'Image does not exist.'
@@ -33,7 +33,7 @@ pipeline {
             steps {
                 script {
                     echo '==>Building Test Container....'
-                    sh 'docker build -t blog_backend .'
+                    sh 'docker build -t blog_api .'
                     echo '==>Test Container Build Success.'
                 }
             }
@@ -42,7 +42,7 @@ pipeline {
             steps {
                 script {
                     echo '==>Adding Tag Test Container....'
-                    sh 'docker tag blog_backend blog_backend:test'
+                    sh 'docker tag blog_api blog_api:test'
                     echo '==>Tag Added Test Container.'
                 }
             }
@@ -51,7 +51,7 @@ pipeline {
             steps {
                 script {
                     echo '==>Running Test Container....'
-                    sh "docker run -d -p $TEST_PORT:$TEST_PORT --name blog_api --env-file .env blog_backend:test"
+                    sh "docker run -d -p $TEST_PORT:$TEST_PORT --name blog_api --env-file .env blog_api:test"
                     echo '==>Test Container Running.'
                 }
             }
@@ -70,7 +70,7 @@ pipeline {
                     echo '==>Removing Test Container And Image....'
                     sh 'docker stop blog_api'
                     sh 'docker rm blog_api'
-                    sh """docker rmi -f \$(docker images 'blog_backend:test' -a -q)"""
+                    sh """docker rmi -f \$(docker images 'blog_api:test' -a -q)"""
                     echo '==>Removed Test Container And Image'
                 }
             }
@@ -80,20 +80,20 @@ pipeline {
             steps {
                 script {
                       
-                    def containerExistsOutput = sh(script: "docker ps -a --filter name=blog_backend --format '{{.Names}}'", returnStdout: true).trim()
-                    def imageExistsOutput = sh(script: 'docker images -q golamrabbani3587/blog_backend', returnStdout: true).trim()
+                    def containerExistsOutput = sh(script: "docker ps -a --filter name=blog_api --format '{{.Names}}'", returnStdout: true).trim()
+                    def imageExistsOutput = sh(script: 'docker images -q golamrabbani3587/blog_api', returnStdout: true).trim()
 
                     if (containerExistsOutput) {
                         echo 'Container exists. Stopping and removing...'
-                        sh 'docker stop golamrabbani3587/blog_backend:v1'
-                        sh 'docker rm golamrabbani3587/blog_backend:v1'
+                        sh 'docker stop golamrabbani3587/blog_api:v1'
+                        sh 'docker rm golamrabbani3587/blog_api:v1'
                     }
                     else {
                         echo 'Container does not exist.'
                     }
                     if (imageExistsOutput) {
                         echo 'Image exists. Removing...'
-                        sh """docker rmi -f \$(docker images 'golamrabbani3587/blog_backend:v1' -a -q)"""
+                        sh """docker rmi -f \$(docker images 'golamrabbani3587/blog_api:v1' -a -q)"""
                     }
                     else {
                         echo 'Image does not exist.'
@@ -104,14 +104,14 @@ pipeline {
         stage('Build Production Docker Image') {
             steps {
                 echo '==>Building Production Container...'
-                sh 'docker build -t golamrabbani3587/blog_backend:v1 .'
+                sh 'docker build -t golamrabbani3587/blog_api:v1 .'
                 echo '==>Successfully Build.'
             }
         }
         stage('Run Docker Image') {
             steps {
                 echo '==>Running Production Container...'
-                sh "docker run -d -p $PROD_PORT:$PROD_PORT --name blog_backend --env-file .env golamrabbani3587/blog_backend:v1"
+                sh "docker run -d -p $PROD_PORT:$PROD_PORT --name blog_api --env-file .env golamrabbani3587/blog_api:v1"
                 echo '==>Successfully Running.'
             }
         }
@@ -119,10 +119,10 @@ pipeline {
             steps {
                 script {
                     def commitMessage = sh(script: "git log --format=%s -n 1", returnStdout: true).trim()
-                    def imageTag = "golamrabbani3587/blog_backend:${commitMessage}"
+                    def imageTag = "golamrabbani3587/blog_api:${commitMessage}"
                     echo "==>Pushing $imageTag Container to Docker Hub"
                     sh "echo 'Programming123#' | docker login -u golamrabbani3587 --password-stdin"
-                    sh "docker tag golamrabbani3587/blog_backend:v1 $imageTag"
+                    sh "docker tag golamrabbani3587/blog_api:v1 $imageTag"
                     sh "docker push $imageTag"
                 }
             }
