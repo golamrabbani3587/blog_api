@@ -9,12 +9,12 @@ pipeline {
         stage('Check Test Docker Image And Remove If Exist') {
             steps {
                 script {
-                    def containerExistsOutput = sh(script: "docker ps -a --filter name=blog_backend-test --format '{{.Names}}'", returnStdout: true).trim()
-                    def imageExistsOutput = sh(script: 'docker images -q blog_backend-test', returnStdout: true).trim()
+                    def containerExistsOutput = sh(script: "docker ps -a --filter name=blog_api --format '{{.Names}}'", returnStdout: true).trim()
+                    def imageExistsOutput = sh(script: 'docker images -q blog_api', returnStdout: true).trim()
                     if (containerExistsOutput) {
                         echo 'Container exists. Stopping and removing...'
-                        sh 'docker stop blog_backend-test'
-                        sh 'docker rm blog_backend-test'
+                        sh 'docker stop blog_api'
+                        sh 'docker rm blog_api'
                     }
                     else {
                         echo 'Container does not exist.'
@@ -51,7 +51,7 @@ pipeline {
             steps {
                 script {
                     echo '==>Running Test Container....'
-                    sh "docker run -d -p $TEST_PORT:$TEST_PORT --name blog_backend-test --env-file .env blog_backend:test"
+                    sh "docker run -d -p $TEST_PORT:$TEST_PORT --name blog_api --env-file .env blog_backend:test"
                     echo '==>Test Container Running.'
                 }
             }
@@ -60,7 +60,7 @@ pipeline {
             steps {
                 script {
                     echo '==>Running Test Cases....'
-                    sh 'docker exec blog_backend-test npm test'
+                    sh 'docker exec blog_api npm test'
                 }
             }
         }
@@ -68,8 +68,8 @@ pipeline {
             steps {
                 script {
                     echo '==>Removing Test Container And Image....'
-                    sh 'docker stop blog_backend-test'
-                    sh 'docker rm blog_backend-test'
+                    sh 'docker stop blog_api'
+                    sh 'docker rm blog_api'
                     sh """docker rmi -f \$(docker images 'blog_backend:test' -a -q)"""
                     echo '==>Removed Test Container And Image'
                 }
