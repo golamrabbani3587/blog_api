@@ -2,7 +2,7 @@ pipeline {
     agent any
     environment {
         TEST_PORT = 5483
-        PROD_PORT = 2   013
+        PROD_PORT = 2013
     }
     
     stages {
